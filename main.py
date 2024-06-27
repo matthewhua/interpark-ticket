@@ -1,26 +1,25 @@
 # exe试验
 # 谷歌浏览器
 # 按座位图选择
-import sys
-from datetime import datetime
-import os
-import pickle
-from selenium import webdriver
-import time
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.select import Select
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import json
-import requests
 import base64
-import re
-import traceback
-
-from infodemo import *
-from SeatArea import *
+import json
 import logging
 import os
+import re
+import sys
+import time
+import traceback
+from datetime import datetime
+
+import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.select import Select
+from selenium.webdriver.support.wait import WebDriverWait
+
+from SeatArea import *
+from infodemo import *
 
 
 def loginit():
@@ -55,7 +54,7 @@ main_url = "https://www.globalinterpark.com/en/"
 login_url = "https://www.globalinterpark.com/en/login?redirectUrl=aHR0cDovL3d3dy5nbG9iYWxpbnRlcnBhcmsuY29tL21h"
 # 抢购地址
 # target_url = "https://www.globalinterpark.com/detail/edetail?prdNo=23008837&dispNo=01011"
-target_url = "https://www.globalinterpark.com/en/product/24008203"
+target_url = "https://www.globalinterpark.com/en/product/24008319"
 
 
 # 登录 打开抢购页面
@@ -466,7 +465,7 @@ if __name__ == '__main__':
         # 打印当前时间f
         logging.error("当前时间进入登录页面：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         # 打开浏览器
-        driver = webdriver.Chrome()
+        driver = webdriver.Edge(options=options)
 
         # 打开主页 登录页面
         driver.get(login_url)
@@ -503,7 +502,7 @@ if __name__ == '__main__':
 
         logging.error("当前时间进入选座前发生异常：%s，异常行数: %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                       lineno)
-        continue
+        #continue
     dateCount = 0
     try:
         dateCount = dateCount + 1
@@ -520,8 +519,8 @@ if __name__ == '__main__':
         logging.error("当前时间退出选座：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         logging.error(f'Exception line {lineno}: {e}')
         # 这里是防止登录失效或者超过20分钟，需要重新登录下
-        continue
-    break
+        #continue
+    #break
 
     # 下面的代码没经过测试，这里加声音
     # 播放系统默认的提示音10s
