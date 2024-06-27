@@ -1,0 +1,6 @@
+selenium==4.21.0
+pytest~=8.2.2
+trio
+pytest-trio
+flake8
+requests~=2.32.3

@@ -17,12 +17,11 @@ import base64
 import re
 import traceback
 
-
-# from infodemo import *
-from info import *
+from infodemo import *
 from SeatArea import *
 import logging
 import os
+
 
 def loginit():
     log_folder = 'log'
@@ -49,36 +48,42 @@ def loginit():
     logger.addHandler(debug_handler)
     logger.addHandler(other_handler)
 
+
 # interpark主页
-main_url = "https://www.globalinterpark.com/main/main"
+main_url = "https://www.globalinterpark.com/en/"
 # 登录地址
-login_url = "https://www.globalinterpark.com/user/signin?redirectUrl=aHR0cDovL3d3dy5nbG9iYWxpbnRlcnBhcmsuY29tL21haW4vbWFpbg=="
+login_url = "https://www.globalinterpark.com/en/login?redirectUrl=aHR0cDovL3d3dy5nbG9iYWxpbnRlcnBhcmsuY29tL21h"
 # 抢购地址
-#target_url = "https://www.globalinterpark.com/detail/edetail?prdNo=23008837&dispNo=01011"
-target_url = "https://www.globalinterpark.com/detail/edetail?prdNo=23007165&dispNo=undefined"
+# target_url = "https://www.globalinterpark.com/detail/edetail?prdNo=23008837&dispNo=01011"
+target_url = "https://www.globalinterpark.com/en/product/24008203"
+
+
 # 登录 打开抢购页面
 def Login():
     # 输入账号 账号输入框：#memEmail
-    driver.find_element(By.ID, "memEmail").send_keys(Email)
+    driver.find_element(By.CSS_SELECTOR, "input[autocomplete='email']").send_keys(Email)
     # 输入密码 密码输入框：#memPass
-    driver.find_element(By.ID, "memPass").send_keys(Password)
+    driver.find_element(By.CSS_SELECTOR, "input[autocomplete='current-password']").send_keys(Password)
     # 点击登录 登录按钮：#sign_in
     driver.find_element(By.ID, "sign_in").click()
     time.sleep(1)
     # 打开抢购页面
     driver.get(target_url)
 
+
 # 抢购页面点击预订 选择日期 处理弹窗 识别验证码
 def Booking():
     # 点击预订
-    WebDriverWait(driver,20,0.5).until(EC.presence_of_element_located((By.ID,'product_detail_area')))
+    WebDriverWait(driver, 20, 0.5).until(EC.presence_of_element_located((By.ID, 'product_detail_area')))
     driver.switch_to.frame("product_detail_area")
-    driver.find_element(By.CSS_SELECTOR,'body > div > div > div.wrap_Pinfo > div.bak > div.Py_Time > div.Date_Select > div.btn_Booking > img').click()
+    driver.find_element(By.CSS_SELECTOR,
+                        'body > div > div > div.wrap_Pinfo > div.bak > div.Py_Time > div.Date_Select > div.btn_Booking > img').click()
     time.sleep(1)
-    #获取窗口并切换到新窗口
+    # 获取窗口并切换到新窗口
     global handles
     handles = driver.window_handles
     driver.switch_to.window(handles[1])
+
 
 def Date(initCount):
     global CodeFlag
@@ -119,7 +124,7 @@ def Date(initCount):
     # Alert处理
     Alert()
     # 处理验证码
-    WebDriverWait(driver,10,0.5).until(EC.presence_of_element_located((By.ID,'ifrmSeat')))
+    WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.ID, 'ifrmSeat')))
     dateinnercount4 = 0
     while True:
         try:
@@ -150,6 +155,7 @@ def Date(initCount):
     time.sleep(0.5)
     ChooseSeat()
 
+
 # 判断验证码是否存在
 def IsCodeExist():
     try:
@@ -159,6 +165,7 @@ def IsCodeExist():
         return flag
     except:
         logging.info("###无须进行验证码操作1###")
+
 
 # 百度云通用文字识别（标准版）
 def CodeIdentify():
@@ -178,12 +185,13 @@ def CodeIdentify():
         result = response.json()
         str = json.dumps(result)
         global code
-        code = ''.join(re.findall(r'[A-Z]',str))
+        code = ''.join(re.findall(r'[A-Z]', str))
+
 
 # 识别并输入验证码
 def Identify_Input():
     # 定位验证码img截图并保存
-    WebDriverWait(driver,30,0.5).until(EC.presence_of_element_located((By.ID,'imgCaptcha')))
+    WebDriverWait(driver, 30, 0.5).until(EC.presence_of_element_located((By.ID, 'imgCaptcha')))
     # driver.find_element(By.ID, 'imgCaptcha').screenshot(r'D:/my_pythonProject/Interpark/yzm2.png')
     driver.find_element(By.ID, 'imgCaptcha').screenshot(r'yzm2.png')
     CodeIdentify()
@@ -196,10 +204,12 @@ def Identify_Input():
     driver.find_element(By.CSS_SELECTOR, '#txtCaptcha').send_keys(code)
     logging.info("已输入验证码")
     time.sleep(0.5)
-    driver.find_element(By.CSS_SELECTOR,'#divRecaptcha > div.capchaInner.G2001 > div.capchaBtns > a:nth-child(2)').click()
+    driver.find_element(By.CSS_SELECTOR,
+                        '#divRecaptcha > div.capchaInner.G2001 > div.capchaBtns > a:nth-child(2)').click()
     logging.info("已点击提交")
     # submit后再次判断验证码是否存在
     IsCodeExist()
+
 
 # 验证码操作
 def DoCode():
@@ -210,12 +220,14 @@ def DoCode():
     global CodeFlag
     CodeFlag = False
 
+
 # 验证失败，刷新图片重新验证
 def RefreshCode():
     logging.info("###验证失败，刷新图片重新验证")
     WebDriverWait(driver, 10, 0.5).until(EC.presence_of_element_located((By.CLASS_NAME, 'refreshBtn')))
     driver.find_element(By.CLASS_NAME, 'refreshBtn').click()
     Identify_Input()
+
 
 # 处理弹窗 alert（警告信息）和confirm（确认信息）
 def Alert():
@@ -224,6 +236,7 @@ def Alert():
         logging.info("###已处理日期页弹窗###")
     except:
         logging.info("###日期页无弹窗###")
+
 
 # 判断选座失败弹窗是否弹出
 def SeatAlert():
@@ -237,6 +250,7 @@ def SeatAlert():
         logging.info("###无弹窗 选座成功###")
         Seatflag = False
         return Seatflag
+
 
 def ChooseSeat():
     global n
@@ -262,7 +276,8 @@ def ChooseSeat():
 
             logging.info(f'进入了：{y}区')
             try:
-                elements = driver.find_elements(By.XPATH, "//*[@id='TmgsTable']/tbody/tr/td/span[not(@class='SeatR' or @class='SeatT or @class='SeatB') and @class!='']")
+                elements = driver.find_elements(By.XPATH,
+                                                "//*[@id='TmgsTable']/tbody/tr/td/span[not(@class='SeatR' or @class='SeatT or @class='SeatB') and @class!='']")
 
                 elements[0].click()
                 # driver.find_elements(By.ID, 'Seats')[i].click()
@@ -283,7 +298,7 @@ def ChooseSeat():
     while True:
         try:
             driver.switch_to.parent_frame()
-            driver.find_element(By.ID,"NextStepImage").click()
+            driver.find_element(By.ID, "NextStepImage").click()
         except:
             logging.error(f'{y}区找到了但是后续发生异常，请关注')
             continue
@@ -291,6 +306,7 @@ def ChooseSeat():
     # 无须返回iframe（0） 直接识别弹窗
     time.sleep(0.5)
     SeatAlert()
+
 
 # 再次选座
 def ChooseSeatAgain():
@@ -301,8 +317,8 @@ def ChooseSeatAgain():
     # 取消选择第一个（取消后该座位仍可以点击）
     # 选择后一个
     try:
-        driver.find_elements(By.ID,'Seats')[0].click()
-        driver.find_elements(By.ID,'Seats')[i].click()
+        driver.find_elements(By.ID, 'Seats')[0].click()
+        driver.find_elements(By.ID, 'Seats')[i].click()
     except:
         # 分区无票 刷新
         logging.info(f'{y}区无票 正在刷新')
@@ -319,10 +335,11 @@ def ChooseSeatAgain():
     time.sleep(0.5)
     SeatAlert()
 
+
 # 选择价格
 def Price():
     # 2.2.3 选择价格
-    time.sleep(0.5)
+    time.sleep(1)
     # 切换窗口
     global hansles
     handles = driver.window_handles
@@ -339,17 +356,19 @@ def Price():
     driver.find_element(By.ID, "SmallNextBtnImage").click()
     UserCertify()
 
+
 # 用户须知确认（在选择价格后出现）费时
 def UserCertify():
     try:
         driver.switch_to.frame("ifrmBookCertify")
-        driver.find_element(By.ID,'Agree').click()
-        driver.find_element(By.CSS_SELECTOR,'#information > div.inforbtn > a:nth-child(1) > img').click()
+        driver.find_element(By.ID, 'Agree').click()
+        driver.find_element(By.CSS_SELECTOR, '#information > div.inforbtn > a:nth-child(1) > img').click()
         # 下一步
         driver.switch_to.parent_frame()
         driver.find_element(By.ID, "SmallNextBtnImage").click()
     except:
         logging.info("###无agree步骤###")
+
 
 # 输入基本信息
 def InputInfo():
@@ -378,6 +397,7 @@ def InputInfo():
     driver.switch_to.parent_frame()
     driver.find_element(By.ID, "SmallNextBtnImage").click()
 
+
 # 付款方式
 def PayWay():
     # 2.2.5 付款
@@ -400,6 +420,7 @@ def PayWay():
     driver.switch_to.parent_frame()
     driver.find_element(By.ID, "SmallNextBtnImage").click()
 
+
 # 最终确认
 def Finaly():
     # # 最终确认
@@ -409,6 +430,7 @@ def Finaly():
     # 付款
     driver.switch_to.parent_frame()
     driver.find_element(By.ID, "LargeNextBtnImage").click()
+
 
 def getErrorLine():
     # 获取异常信息
@@ -424,6 +446,7 @@ def getErrorLine():
     lineno = tb_info[-1].lineno
     return lineno
 
+
 if __name__ == '__main__':
     # 浏览器配置对象
     options = webdriver.ChromeOptions()
@@ -436,68 +459,69 @@ if __name__ == '__main__':
     options.add_argument('--disable-blink-features=AutomationControlled')
     count = 0
     global maxCount
-    maxCount = 10
-    while True:
-        try:
-            loginit()
-            # 打印当前时间f
-            logging.error("当前时间进入登录页面：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            # 打开浏览器
-            driver = webdriver.Chrome(options=options)
+    maxCount = 1
+   # while True:
+    try:
+        loginit()
+        # 打印当前时间f
+        logging.error("当前时间进入登录页面：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        # 打开浏览器
+        driver = webdriver.Chrome()
 
-            # 打开主页 登录页面
-            driver.get(login_url)
+        # 打开主页 登录页面
+        driver.get(login_url)
 
-            Login()
+        Login()
 
-            # 切换英文
-            while True:
-                try:
-                    count = count + 1
-                    driver.find_element(By.ID, 'lang_title').click()
-                    driver.find_element(By.ID, 'lang_en').click()
-                except Exception as e:
-                    time.sleep(0.5)
-                    if count > 20:
-                        lineno = getErrorLine()
-                        logging.error(f'Exception line {lineno}: {e}')
-                        break
-                    continue
-                break
+        # 切换英文
+        while True:
+            try:
+                count = count + 1
+                driver.find_element(By.ID, 'lang_title').click()
+                driver.find_element(By.ID, 'lang_en').click()
+            except Exception as e:
+                time.sleep(0.5)
+                if count > 20:
+                    lineno = getErrorLine()
+                    logging.error(f'Exception line {lineno}: {e}')
+                    break
+                continue
+            break
 
-            time.sleep(1)
+        time.sleep(1)
 
-            global n
-            global x
-            global CodeFlag
-            CodeFlag = True
-            n = 1
-            x = 0
+        global n
+        global x
+        global CodeFlag
+        CodeFlag = True
+        n = 1
+        x = 0
 
-            Booking()
-        except:
-            lineno = getErrorLine()
+        Booking()
+    except:
+        lineno = getErrorLine()
 
-            logging.error("当前时间进入选座前发生异常：%s，异常行数: %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'), lineno)
-            continue
-        dateCount = 0
-        try:
-            dateCount = dateCount + 1
-            logging.error("当前时间进入选座页面：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            global initCount
-            initCount = 0
-            Date(0)
-        except Exception as e:
-            time.sleep(0.5)
-            # 获取异常发生的行号
-            lineno = getErrorLine()
+        logging.error("当前时间进入选座前发生异常：%s，异常行数: %s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                      lineno)
+        continue
+    dateCount = 0
+    try:
+        dateCount = dateCount + 1
+        logging.error("当前时间进入选座页面：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        global initCount
+        initCount = 0
+        Date(0)
+    except Exception as e:
+        time.sleep(1)
+        # 获取异常发生的行号
+        lineno = getErrorLine()
 
-            # 记录异常信息，包括行号
-            logging.error("当前时间退出选座：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-            logging.error(f'Exception line {lineno}: {e}')
-            # 这里是防止登录失效或者超过20分钟，需要重新登录下
-            continue
-        break
+        # 记录异常信息，包括行号
+        logging.error("当前时间退出选座：%s", datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        logging.error(f'Exception line {lineno}: {e}')
+        # 这里是防止登录失效或者超过20分钟，需要重新登录下
+        continue
+    break
 
     # 下面的代码没经过测试，这里加声音
     # 播放系统默认的提示音10s
